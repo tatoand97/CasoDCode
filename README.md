@@ -145,13 +145,16 @@ Invalid JSON or missing required fields raise `InvalidOperationException` immedi
 
 ## Routing Rules Used In Code
 
-- `reject` first when destructive mass-order actions are requested, such as `delete`, `remove`, `erase`, `purge`, `wipe`, or `destroy` against `all orders`, `every order`, or equivalent bulk targets
-- `refund` when the prompt includes `refund`, `return`, `reimbursement`, or `money back`
+- `reject` first when destructive mass-order actions are requested, such as `delete`, `remove`, `erase`, `purge`, `wipe`, `destroy`, `drop`, or `cancel` against `all orders`, `every order`, or equivalent bulk targets
+- `reject` also when those destructive verbs target an explicit order reference, including `order`, `orders`, `ORD-...`, or a numeric order id extracted by `OrderIdExtractor`
+- `reject` for administrative requests outside the supported order-status and refund scope
+- `refund` when the prompt includes `refund`, `reimbursement`, or `money back`
+- `refund` for `return` only when `return` appears with refund/order context; status-oriented phrases like `return the order status` do not auto-route to `refund`
 - `order` when the prompt is about order or shipment status and an order id is present
 - `clarify` when the request is in-domain but ambiguous or missing a required order id
 - `reject` for all other unsupported requests
 - `OrderIdExtractor` matches `ORD[- ]?\d{3,}` first, then falls back to `\b\d{4,}\b`
-- `RefundReason` is extracted best-effort from `because`, `since`, `due to`, or trailing `for`
+- `RefundReason` is extracted best-effort from `because`, `since`, `due to`, or trailing `for`, while skipping obvious order-id-only and status/tracking captures
 
 ## Prompt Agents Reconciled By This Repo
 
@@ -179,7 +182,7 @@ Rules:
 
 ```text
 You are ClarifierAgent.
-You receive a short summary of missing information.
+You receive the original user request, any detected orderId, and a short summary of missing information.
 Return exactly one JSON object and nothing else:
 {"question":"single clear clarification question"}
 Ask only one concise question.

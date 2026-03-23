@@ -182,6 +182,7 @@ internal static class Program
     {
         RouteDecision decision = router.Route(prompt);
         trace.Write("ROUTER", $"Route selected: {decision.RouteLabel}");
+        trace.Write("ROUTER", $"Routing reason: {decision.Reason}");
 
         if (!string.IsNullOrWhiteSpace(decision.OrderId))
         {
@@ -369,7 +370,17 @@ internal static class Program
 
     private static string BuildClarifierPrompt(RouteDecision decision)
     {
-        return $"Missing information summary: {decision.Reason}";
+        return
+            $"""
+            User request:
+            {decision.Prompt}
+
+            Detected orderId:
+            {decision.OrderId ?? "(missing)"}
+
+            Missing information summary:
+            {decision.Reason}
+            """;
     }
 
     private static string AppendMessage(string prefix, string? message)
