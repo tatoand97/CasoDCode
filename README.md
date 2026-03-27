@@ -1,38 +1,55 @@
-# CasoE - Foundry Bootstrap / Logical IaC
+# CasoDCode - Bootstrap / IaC Logico de Foundry
 
-This repository is a bootstrap-only .NET 8 console application for Azure AI Foundry.
+`CasoDCode` es un repositorio de bootstrap / IaC logico para Azure AI Foundry sobre .NET 8.
 
-Its job is to prepare and validate agent bindings in a Foundry project, not to execute business prompts. The app validates project access, validates the external `OrderAgentId`, reconciles the internal `refund-agent-casee` and `clarifier-agent-casee` agents, prints a reconciliation summary, and exits.
+Su responsabilidad es preparar y validar bindings de agentes dentro de un proyecto Foundry. Este repo no consume agentes, no enruta prompts, no ejecuta flujo de negocio y no actua como runtime.
 
-## What This Repo Does
+## Que hace este repo
 
-- Loads `CasoE` configuration from `appsettings.json`
-- Validates the Foundry project endpoint format
-- Validates access to the target Foundry project
-- Validates that `ModelDeploymentName` exists and is accessible in the project
-- Validates that external `OrderAgentId` exists and can be referenced
-- Reconciles `refund-agent-casee`
-- Reconciles `clarifier-agent-casee`
-- Prints bindings, ids, versions, and reconciliation status
+- Carga `CasoESettings` desde `appsettings.json`
+- Valida el formato de `ProjectEndpoint`
+- Valida acceso al proyecto Foundry
+- Valida que `ModelDeploymentName` exista y sea accesible
+- Valida que el agente externo configurado en `OrderAgentId` exista y pueda referenciarse
+- Reconcilia `refund-agent-casee`
+- Reconcilia `clarifier-agent-casee`
+- Imprime un resumen final con endpoint, deployment, ids, versiones y bindings
+- Termina con codigo `0` si todo sale bien
 
-## Agent Ownership
+## Modelo de ownership
 
-- `OrderAgent` is external to this repo. This repo only validates that the configured `OrderAgentId` exists and can be bound.
-- `RefundAgent` is defined in this repo and reconciled into Foundry as `refund-agent-casee`.
-- `ClarifierAgent` is defined in this repo and reconciled into Foundry as `clarifier-agent-casee`.
+- `OrderAgent` es externo a este repo. `CasoDCode` solo valida que `OrderAgentId` exista y pueda enlazarse.
+- `RefundAgent` se define en este repo y se reconcilia en Foundry como `refund-agent-casee`.
+- `ClarifierAgent` se define en este repo y se reconcilia en Foundry como `clarifier-agent-casee`.
 
-## Out Of Scope
+## Este repo no es
+
+- una API
+- una consola de consumo
+- un runtime de negocio
+- un orquestador code-first
+
+El consumo real de prompts y el flujo runtime deben vivir en otro repo o servicio.
+
+## Out of scope
 
 - runtime consumption
 - code-first routing
 - prompt execution
 - API exposure
 
-This repo does not consume agents, does not route prompts, does not invoke specialists, does not validate runtime JSON outputs, and does not build final user-facing business responses. Runtime consumption belongs in another repo or service.
+Tambien quedan fuera de alcance:
 
-## Configuration
+- invocacion runtime de `OrderAgent`
+- invocacion runtime de `RefundAgent`
+- invocacion runtime de `ClarifierAgent`
+- construccion de respuestas finales al usuario
+- validacion JSON de outputs runtime
+- smoke tests funcionales de negocio
 
-`appsettings.json` uses the `CasoE` section:
+## Configuracion
+
+El repo usa la seccion `CasoE` dentro de `appsettings.json`:
 
 ```json
 {
@@ -44,7 +61,7 @@ This repo does not consume agents, does not route prompts, does not invoke speci
 }
 ```
 
-## Project Structure
+## Estructura principal
 
 ```text
 Program.cs
@@ -64,25 +81,25 @@ appsettings.json
 README.md
 ```
 
-## Build And Run
+## Build y ejecucion
 
-Build:
+Compilar:
 
 ```powershell
 dotnet build
 ```
 
-Run the bootstrap:
+Ejecutar bootstrap:
 
 ```powershell
 dotnet run
 ```
 
-The application does not accept business prompts or runtime arguments.
+La aplicacion no acepta prompts de negocio ni argumentos de runtime.
 
-## Expected Console Output
+## Salida esperada
 
-Example:
+Ejemplo:
 
 ```text
 [CONFIG] Endpoint validated
@@ -100,9 +117,10 @@ Example:
 [SUMMARY] Foundry bootstrap completed
 ```
 
-## Notes
+## Notas
 
-- The project stays on .NET 8.
-- No API surface is introduced.
-- No Foundry Workflow, ManagerAgent, or `agent` tools are introduced here.
-- The authoritative runtime flow should live in a separate consumer application or service.
+- El proyecto permanece en .NET 8.
+- No se introducen Workflows.
+- No se introduce `ManagerAgent`.
+- No se introducen tools tipo `agent`.
+- El runtime/consumo debe vivir fuera de este repositorio.

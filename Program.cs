@@ -23,41 +23,8 @@ internal static class Program
 
         try
         {
-            CasoESettings settings = LoadSettings();
-            string endpoint = GetRequiredSetting(settings.ProjectEndpoint, "CasoE:ProjectEndpoint");
-            string deployment = GetRequiredSetting(settings.ModelDeploymentName, "CasoE:ModelDeploymentName");
-            string orderAgentId = GetRequiredSetting(settings.OrderAgentId, "CasoE:OrderAgentId");
-
-            ValidateProjectEndpoint(endpoint);
-            trace.Write("CONFIG", "Endpoint validated");
-
-            DefaultAzureCredential credential = new(new DefaultAzureCredentialOptions
-            {
-                ExcludeInteractiveBrowserCredential = true,
-            });
-
-            AIProjectClient projectClient = new(new Uri(endpoint), credential);
-            _ = projectClient.OpenAI;
-            AgentValidationService validationService = new(projectClient, trace);
-            AgentReconciler reconciler = new(projectClient, trace);
-
-            await validationService.ValidateProjectAccessAsync(cancellationTokenSource.Token);
-            await validationService.ValidateModelDeploymentAsync(deployment, cancellationTokenSource.Token);
-            ResolvedAgentIdentity orderAgent = await validationService.ValidateOrderAgentAsync(
-                orderAgentId,
-                cancellationTokenSource.Token);
-
-            ReconciliationResult refundAgent = await reconciler.ReconcileAsync(
-                AgentNames.Refund,
-                RefundAgentFactory.Build(deployment),
-                cancellationTokenSource.Token);
-
-            ReconciliationResult clarifierAgent = await reconciler.ReconcileAsync(
-                AgentNames.Clarifier,
-                ClarifierAgentFactory.Build(deployment),
-                cancellationTokenSource.Token);
-
-            WriteSummary(trace, endpoint, deployment, orderAgent, refundAgent, clarifierAgent);
+            await RunBootstrapAsync(trace, cancellationTokenSource.Token);
+            Environment.ExitCode = 0;
         }
         catch (OperationCanceledException) when (cancellationTokenSource.IsCancellationRequested)
         {
@@ -76,7 +43,44 @@ internal static class Program
         }
     }
 
-    private static void WriteSummary(
+    private static async Task RunBootstrapAsync(ConsoleTrace trace, CancellationToken cancellationToken)
+    {
+        BootstrapConfiguration configuration = LoadBootstrapConfiguration();
+        trace.Write("CONFIG", "Endpoint validated");
+
+        AIProjectClient projectClient = CreateProjectClient(configuration.Endpoint);
+        _ = projectClient.OpenAI;
+
+        AgentValidationService validationService = new(projectClient, trace);
+        AgentReconciler reconciler = new(projectClient, trace);
+
+        await validationService.ValidateProjectAccessAsync(cancellationToken);
+        await validationService.ValidateModelDeploymentAsync(configuration.Deployment, cancellationToken);
+
+        ResolvedAgentIdentity orderAgent = await validationService.ValidateOrderAgentAsync(
+            configuration.OrderAgentId,
+            cancellationToken);
+
+        ReconciliationResult refundAgent = await reconciler.ReconcileAsync(
+            AgentNames.Refund,
+            RefundAgentFactory.Build(configuration.Deployment),
+            cancellationToken);
+
+        ReconciliationResult clarifierAgent = await reconciler.ReconcileAsync(
+            AgentNames.Clarifier,
+            ClarifierAgentFactory.Build(configuration.Deployment),
+            cancellationToken);
+
+        WriteBootstrapSummary(
+            trace,
+            configuration.Endpoint,
+            configuration.Deployment,
+            orderAgent,
+            refundAgent,
+            clarifierAgent);
+    }
+
+    private static void WriteBootstrapSummary(
         ConsoleTrace trace,
         string endpoint,
         string deployment,
@@ -101,6 +105,21 @@ internal static class Program
         trace.Write("SUMMARY", "Foundry bootstrap completed");
     }
 
+    private static BootstrapConfiguration LoadBootstrapConfiguration()
+    {
+        CasoESettings settings = LoadSettings();
+        string endpoint = GetRequiredSetting(settings.ProjectEndpoint, "CasoE:ProjectEndpoint");
+        string deployment = GetRequiredSetting(settings.ModelDeploymentName, "CasoE:ModelDeploymentName");
+        string orderAgentId = GetRequiredSetting(settings.OrderAgentId, "CasoE:OrderAgentId");
+
+        ValidateProjectEndpoint(endpoint);
+
+        return new BootstrapConfiguration(
+            Endpoint: endpoint,
+            Deployment: deployment,
+            OrderAgentId: orderAgentId);
+    }
+
     private static CasoESettings LoadSettings()
     {
         IConfiguration configuration = new ConfigurationBuilder()
@@ -114,6 +133,17 @@ internal static class Program
 
         return settings ?? throw new InvalidOperationException(
             $"Missing configuration section '{CasoESettings.SectionName}' in appsettings.json.");
+    }
+
+    private static AIProjectClient CreateProjectClient(string endpoint)
+    {
+        DefaultAzureCredential credential = new(new DefaultAzureCredentialOptions
+        {
+            ExcludeInteractiveBrowserCredential = true,
+        });
+
+        AIProjectClient projectClient = new(new Uri(endpoint), credential);
+        return projectClient;
     }
 
     private static string GetRequiredSetting(string? value, string key)
@@ -176,4 +206,9 @@ internal static class Program
     }
 
     private static string ToStatusLabel(ReconciliationStatus status) => status.ToString().ToLowerInvariant();
+
+    private sealed record BootstrapConfiguration(
+        string Endpoint,
+        string Deployment,
+        string OrderAgentId);
 }
