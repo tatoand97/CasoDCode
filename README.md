@@ -2,54 +2,55 @@
 
 `CasoDCode` es un repositorio de bootstrap / IaC logico para Azure AI Foundry sobre .NET 8.
 
-Su responsabilidad es preparar y validar bindings de agentes dentro de un proyecto Foundry. Este repo no consume agentes, no enruta prompts, no ejecuta flujo de negocio y no actua como runtime.
+Su responsabilidad es validar configuracion, validar acceso al proyecto Foundry, validar la referencia externa a `OrderAgent`, reconciliar `refund-agent-casee`, reconciliar `clarifier-agent-casee`, imprimir un resumen de bindings y terminar. Este repo ya no es una PoC de consumo code-first.
 
 ## Que hace este repo
 
 - Carga `CasoESettings` desde `appsettings.json`
-- Valida el formato de `ProjectEndpoint`
+- Valida `ProjectEndpoint`
+- Valida el deployment configurado en `ModelDeploymentName`
 - Valida acceso al proyecto Foundry
-- Valida que `ModelDeploymentName` exista y sea accesible
-- Valida que el agente externo configurado en `OrderAgentId` exista y pueda referenciarse
+- Valida que `OrderAgentId` exista y pueda referenciarse
 - Reconcilia `refund-agent-casee`
 - Reconcilia `clarifier-agent-casee`
-- Imprime un resumen final con endpoint, deployment, ids, versiones y bindings
-- Termina con codigo `0` si todo sale bien
+- Imprime ids, nombres, versiones y bindings para repos consumidores
+- Termina con codigo `0` cuando el bootstrap finaliza correctamente
 
-## Modelo de ownership
+## Produces
 
-- `OrderAgent` es externo a este repo. `CasoDCode` solo valida que `OrderAgentId` exista y pueda enlazarse.
+- validated external OrderAgent reference
+- reconciled RefundAgent
+- reconciled ClarifierAgent
+- binding summary for downstream consumer repos
+
+## Ownership de agentes
+
+- `OrderAgent` es externo a este repo. `CasoDCode` solo valida que el `OrderAgentId` configurado exista y pueda enlazarse.
 - `RefundAgent` se define en este repo y se reconcilia en Foundry como `refund-agent-casee`.
 - `ClarifierAgent` se define en este repo y se reconcilia en Foundry como `clarifier-agent-casee`.
 
-## Este repo no es
+## Este repo NO es
 
 - una API
 - una consola de consumo
 - un runtime de negocio
-- un orquestador code-first
+- un orchestrator code-first
 
-El consumo real de prompts y el flujo runtime deben vivir en otro repo o servicio.
+El consumo/runtime vive en otro repo o servicio.
 
 ## Out of scope
 
 - runtime consumption
 - code-first routing
 - prompt execution
+- response composition
 - API exposure
 
-Tambien quedan fuera de alcance:
-
-- invocacion runtime de `OrderAgent`
-- invocacion runtime de `RefundAgent`
-- invocacion runtime de `ClarifierAgent`
-- construccion de respuestas finales al usuario
-- validacion JSON de outputs runtime
-- smoke tests funcionales de negocio
+Tambien quedan fuera de alcance la invocacion runtime de `OrderAgent`, `RefundAgent` o `ClarifierAgent`, la validacion de outputs JSON de negocio y cualquier respuesta final al usuario.
 
 ## Configuracion
 
-El repo usa la seccion `CasoE` dentro de `appsettings.json`:
+`appsettings.json` conserva solo configuracion de bootstrap:
 
 ```json
 {
@@ -68,8 +69,12 @@ Program.cs
 CasoESettings.cs
 Agents/
   AgentNames.cs
+  AgentInstructionLoader.cs
   RefundAgentFactory.cs
   ClarifierAgentFactory.cs
+  Definitions/
+    refund-agent-casee.instructions.txt
+    clarifier-agent-casee.instructions.txt
 Models/
   ResolvedAgentIdentity.cs
   ReconciliationResult.cs
@@ -99,20 +104,18 @@ La aplicacion no acepta prompts de negocio ni argumentos de runtime.
 
 ## Salida esperada
 
-Ejemplo:
-
 ```text
 [CONFIG] Endpoint validated
+[CONFIG] Deployment validated: gpt-4.1
 [VALIDATION] Project access validated
-[VALIDATION] Model deployment validated: gpt-4.1
 [VALIDATION] OrderAgent validated: Name=OrderAgent, Version=5, Id=OrderAgent:5
-[RECONCILE] refund-agent-casee => unchanged
-[RECONCILE] clarifier-agent-casee => updated
+[RECONCILE] refund-agent-casee => created|updated|unchanged
+[RECONCILE] clarifier-agent-casee => created|updated|unchanged
 [SUMMARY] Endpoint: https://<resource>.services.ai.azure.com/api/projects/<project>
 [SUMMARY] Deployment: gpt-4.1
 [SUMMARY] OrderAgent => validated | Name=OrderAgent | Version=5 | Id=OrderAgent:5
-[SUMMARY] RefundAgent => unchanged | Name=refund-agent-casee | Version=3 | Id=<refund-agent-id>
-[SUMMARY] ClarifierAgent => updated | Name=clarifier-agent-casee | Version=4 | Id=<clarifier-agent-id>
+[SUMMARY] RefundAgent => created|updated|unchanged | Name=refund-agent-casee | Version=<version> | Id=<refund-agent-id>
+[SUMMARY] ClarifierAgent => created|updated|unchanged | Name=clarifier-agent-casee | Version=<version> | Id=<clarifier-agent-id>
 [SUMMARY] Bindings => OrderAgent=OrderAgent:5; RefundAgent=<refund-agent-id>; ClarifierAgent=<clarifier-agent-id>
 [SUMMARY] Foundry bootstrap completed
 ```
@@ -123,4 +126,4 @@ Ejemplo:
 - No se introducen Workflows.
 - No se introduce `ManagerAgent`.
 - No se introducen tools tipo `agent`.
-- El runtime/consumo debe vivir fuera de este repositorio.
+- No existe routing ni consumo runtime en el path principal.

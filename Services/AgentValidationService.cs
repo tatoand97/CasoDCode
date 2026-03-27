@@ -36,7 +36,7 @@ internal sealed class AgentValidationService
         string trimmedDeploymentName = modelDeploymentName.Trim();
         _ = await _projectClient.Deployments.GetDeploymentAsync(trimmedDeploymentName, cancellationToken);
 
-        _trace.Write("VALIDATION", $"Model deployment validated: {trimmedDeploymentName}");
+        _trace.Write("CONFIG", $"Deployment validated: {trimmedDeploymentName}");
     }
 
     public async Task<ResolvedAgentIdentity> ValidateOrderAgentAsync(string orderAgentId, CancellationToken cancellationToken)

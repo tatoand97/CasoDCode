@@ -49,7 +49,6 @@ internal static class Program
         trace.Write("CONFIG", "Endpoint validated");
 
         AIProjectClient projectClient = CreateProjectClient(configuration.Endpoint);
-        _ = projectClient.OpenAI;
 
         AgentValidationService validationService = new(projectClient, trace);
         AgentReconciler reconciler = new(projectClient, trace);
