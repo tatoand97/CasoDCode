@@ -32,12 +32,11 @@ internal sealed class AgentReconciler
                 new AgentVersionCreationOptions(desiredDefinition),
                 cancellationToken);
 
-            _trace.Write("RECONCILE", $"{agentName} => {ReconciliationStatus.Created}");
+            _trace.Write("RECONCILE", $"{agentName} => {ToStatusLabel(ReconciliationStatus.Created)}");
             return new ReconciliationResult(
                 AgentName: created.Value.Name,
                 AgentId: created.Value.Id,
                 AgentVersion: created.Value.Version,
-                ResponseClientName: created.Value.Name,
                 Status: ReconciliationStatus.Created,
                 Signature: desiredSignature);
         }
@@ -45,12 +44,11 @@ internal sealed class AgentReconciler
         string currentSignature = BuildDefinitionSignature(latest.Definition);
         if (string.Equals(currentSignature, desiredSignature, StringComparison.Ordinal))
         {
-            _trace.Write("RECONCILE", $"{agentName} => {ReconciliationStatus.Unchanged}");
+            _trace.Write("RECONCILE", $"{agentName} => {ToStatusLabel(ReconciliationStatus.Unchanged)}");
             return new ReconciliationResult(
                 AgentName: latest.Name,
                 AgentId: latest.Id,
                 AgentVersion: latest.Version,
-                ResponseClientName: latest.Name,
                 Status: ReconciliationStatus.Unchanged,
                 Signature: currentSignature);
         }
@@ -60,12 +58,11 @@ internal sealed class AgentReconciler
             new AgentVersionCreationOptions(desiredDefinition),
             cancellationToken);
 
-        _trace.Write("RECONCILE", $"{agentName} => {ReconciliationStatus.Updated}");
+        _trace.Write("RECONCILE", $"{agentName} => {ToStatusLabel(ReconciliationStatus.Updated)}");
         return new ReconciliationResult(
             AgentName: updated.Value.Name,
             AgentId: updated.Value.Id,
             AgentVersion: updated.Value.Version,
-            ResponseClientName: updated.Value.Name,
             Status: ReconciliationStatus.Updated,
             Signature: desiredSignature);
     }
@@ -134,4 +131,6 @@ internal sealed class AgentReconciler
 
         return string.Empty;
     }
+
+    private static string ToStatusLabel(ReconciliationStatus status) => status.ToString().ToLowerInvariant();
 }

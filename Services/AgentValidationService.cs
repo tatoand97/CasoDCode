@@ -23,7 +23,20 @@ internal sealed class AgentValidationService
             break;
         }
 
-        _trace.Write("CONFIG", "Endpoint validated");
+        _trace.Write("VALIDATION", "Project access validated");
+    }
+
+    public async Task ValidateModelDeploymentAsync(string modelDeploymentName, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(modelDeploymentName))
+        {
+            throw new InvalidOperationException("CasoE:ModelDeploymentName cannot be empty.");
+        }
+
+        string trimmedDeploymentName = modelDeploymentName.Trim();
+        _ = await _projectClient.Deployments.GetDeploymentAsync(trimmedDeploymentName, cancellationToken);
+
+        _trace.Write("VALIDATION", $"Model deployment validated: {trimmedDeploymentName}");
     }
 
     public async Task<ResolvedAgentIdentity> ValidateOrderAgentAsync(string orderAgentId, CancellationToken cancellationToken)
@@ -100,8 +113,7 @@ internal sealed class AgentValidationService
                     return new ResolvedAgentIdentity(
                         AgentId: version.Id,
                         AgentName: agent.Name,
-                        AgentVersion: version.Version,
-                        ResponseClientName: version.Name);
+                        AgentVersion: version.Version);
                 }
             }
         }
@@ -125,8 +137,7 @@ internal sealed class AgentValidationService
                 return new ResolvedAgentIdentity(
                     AgentId: version.Id,
                     AgentName: agentName,
-                    AgentVersion: version.Version,
-                    ResponseClientName: version.Name);
+                    AgentVersion: version.Version);
             }
         }
 
