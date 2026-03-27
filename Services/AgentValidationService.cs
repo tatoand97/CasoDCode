@@ -1,9 +1,9 @@
 using Azure.AI.Projects;
 using Azure.AI.Projects.OpenAI;
-using CasoE.Models;
+using CasoDCode.Models;
 using System.ClientModel;
 
-namespace CasoE.Services;
+namespace CasoDCode.Services;
 
 internal sealed class AgentValidationService
 {
@@ -30,7 +30,7 @@ internal sealed class AgentValidationService
     {
         if (string.IsNullOrWhiteSpace(modelDeploymentName))
         {
-            throw new InvalidOperationException("CasoE:ModelDeploymentName cannot be empty.");
+            throw new InvalidOperationException("CasoDCode:ModelDeploymentName cannot be empty.");
         }
 
         string trimmedDeploymentName = modelDeploymentName.Trim();
@@ -43,7 +43,7 @@ internal sealed class AgentValidationService
     {
         if (string.IsNullOrWhiteSpace(orderAgentId))
         {
-            throw new InvalidOperationException("CasoE:OrderAgentId cannot be empty.");
+            throw new InvalidOperationException("CasoDCode:OrderAgentId cannot be empty.");
         }
 
         string trimmedAgentId = orderAgentId.Trim();
@@ -52,7 +52,7 @@ internal sealed class AgentValidationService
         if (resolved is null)
         {
             throw new InvalidOperationException(
-                $"CasoE:OrderAgentId '{trimmedAgentId}' was not found in the project or is not accessible.");
+                $"CasoDCode:OrderAgentId '{trimmedAgentId}' was not found in the project or is not accessible.");
         }
 
         _trace.Write(

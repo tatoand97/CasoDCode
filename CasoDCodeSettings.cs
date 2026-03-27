@@ -1,8 +1,8 @@
-namespace CasoE;
+namespace CasoDCode;
 
-internal sealed class CasoESettings
+internal sealed class CasoDCodeSettings
 {
-    public const string SectionName = "CasoE";
+    public const string SectionName = "CasoDCode";
 
     public string? ProjectEndpoint { get; init; }
 

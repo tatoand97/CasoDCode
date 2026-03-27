@@ -1,4 +1,4 @@
-namespace CasoE.Services;
+namespace CasoDCode.Services;
 
 internal sealed class ConsoleTrace
 {

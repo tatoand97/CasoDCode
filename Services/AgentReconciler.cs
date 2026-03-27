@@ -1,10 +1,10 @@
 using Azure.AI.Projects;
 using Azure.AI.Projects.OpenAI;
-using CasoE.Models;
+using CasoDCode.Models;
 using System.ClientModel;
 using System.Text.Json;
 
-namespace CasoE.Services;
+namespace CasoDCode.Services;
 
 internal sealed class AgentReconciler
 {

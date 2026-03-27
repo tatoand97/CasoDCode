@@ -5,8 +5,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyName>CasoE</AssemblyName>
-    <RootNamespace>CasoE</RootNamespace>
+    <AssemblyName>CasoDCode</AssemblyName>
+    <RootNamespace>CasoDCode</RootNamespace>
     <NoWarn>$(NoWarn);CA2252;OPENAI001</NoWarn>
   </PropertyGroup>
 

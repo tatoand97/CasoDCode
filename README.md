@@ -6,7 +6,7 @@ Su responsabilidad es validar configuracion, validar acceso al proyecto Foundry,
 
 ## Que hace este repo
 
-- Carga `CasoESettings` desde `appsettings.json`
+- Carga `CasoDCodeSettings` desde `appsettings.json`
 - Valida `ProjectEndpoint`
 - Valida el deployment configurado en `ModelDeploymentName`
 - Valida acceso al proyecto Foundry
@@ -54,7 +54,7 @@ Tambien quedan fuera de alcance la invocacion runtime de `OrderAgent`, `RefundAg
 
 ```json
 {
-  "CasoE": {
+  "CasoDCode": {
     "ProjectEndpoint": "https://<resource>.services.ai.azure.com/api/projects/<project>",
     "ModelDeploymentName": "<deployment-name>",
     "OrderAgentId": "OrderAgent:5"
@@ -66,7 +66,7 @@ Tambien quedan fuera de alcance la invocacion runtime de `OrderAgent`, `RefundAg
 
 ```text
 Program.cs
-CasoESettings.cs
+CasoDCodeSettings.cs
 Agents/
   AgentNames.cs
   AgentInstructionLoader.cs

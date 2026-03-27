@@ -1,6 +1,6 @@
 using Azure.AI.Projects.OpenAI;
 
-namespace CasoE.Agents;
+namespace CasoDCode.Agents;
 
 internal static class ClarifierAgentFactory
 {

@@ -1,4 +1,4 @@
-namespace CasoE.Models;
+namespace CasoDCode.Models;
 
 internal enum ReconciliationStatus
 {

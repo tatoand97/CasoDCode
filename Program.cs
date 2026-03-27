@@ -1,12 +1,12 @@
 using Azure.AI.Projects;
 using Azure.Identity;
-using CasoE.Agents;
-using CasoE.Models;
-using CasoE.Services;
+using CasoDCode.Agents;
+using CasoDCode.Models;
+using CasoDCode.Services;
 using Microsoft.Extensions.Configuration;
 using System.ClientModel;
 
-namespace CasoE;
+namespace CasoDCode;
 
 internal static class Program
 {
@@ -106,10 +106,10 @@ internal static class Program
 
     private static BootstrapConfiguration LoadBootstrapConfiguration()
     {
-        CasoESettings settings = LoadSettings();
-        string endpoint = GetRequiredSetting(settings.ProjectEndpoint, "CasoE:ProjectEndpoint");
-        string deployment = GetRequiredSetting(settings.ModelDeploymentName, "CasoE:ModelDeploymentName");
-        string orderAgentId = GetRequiredSetting(settings.OrderAgentId, "CasoE:OrderAgentId");
+        CasoDCodeSettings settings = LoadSettings();
+        string endpoint = GetRequiredSetting(settings.ProjectEndpoint, "CasoDCode:ProjectEndpoint");
+        string deployment = GetRequiredSetting(settings.ModelDeploymentName, "CasoDCode:ModelDeploymentName");
+        string orderAgentId = GetRequiredSetting(settings.OrderAgentId, "CasoDCode:OrderAgentId");
 
         ValidateProjectEndpoint(endpoint);
 
@@ -119,19 +119,19 @@ internal static class Program
             OrderAgentId: orderAgentId);
     }
 
-    private static CasoESettings LoadSettings()
+    private static CasoDCodeSettings LoadSettings()
     {
         IConfiguration configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
             .Build();
 
-        CasoESettings? settings = configuration
-            .GetSection(CasoESettings.SectionName)
-            .Get<CasoESettings>();
+        CasoDCodeSettings? settings = configuration
+            .GetSection(CasoDCodeSettings.SectionName)
+            .Get<CasoDCodeSettings>();
 
         return settings ?? throw new InvalidOperationException(
-            $"Missing configuration section '{CasoESettings.SectionName}' in appsettings.json.");
+            $"Missing configuration section '{CasoDCodeSettings.SectionName}' in appsettings.json.");
     }
 
     private static AIProjectClient CreateProjectClient(string endpoint)
@@ -160,19 +160,19 @@ internal static class Program
         if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? parsed) ||
             !string.Equals(parsed.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("CasoE:ProjectEndpoint must be an absolute HTTPS URL.");
+            throw new InvalidOperationException("CasoDCode:ProjectEndpoint must be an absolute HTTPS URL.");
         }
 
         if (!endpoint.Contains("/api/projects/", StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(
-                "CasoE:ProjectEndpoint must be a Foundry project endpoint containing '/api/projects/'.");
+                "CasoDCode:ProjectEndpoint must be a Foundry project endpoint containing '/api/projects/'.");
         }
 
         if (endpoint.Contains(".openai.azure.com", StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(
-                "CasoE:ProjectEndpoint must target an Azure AI Foundry project, not an Azure OpenAI resource endpoint.");
+                "CasoDCode:ProjectEndpoint must target an Azure AI Foundry project, not an Azure OpenAI resource endpoint.");
         }
     }
 

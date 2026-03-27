@@ -1,4 +1,4 @@
-namespace CasoE.Agents;
+namespace CasoDCode.Agents;
 
 internal static class AgentInstructionLoader
 {
